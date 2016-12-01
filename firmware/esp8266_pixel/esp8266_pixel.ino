@@ -7,7 +7,8 @@
 #include "configurator.h"
 #include "handler.h"
 
-#define NPN_VERSION "0.2.0"
+
+#define NPN_VERSION "0.3.0"
 #define NPN_COMPILE (String(NPN_VERSION) + " - " + String(__DATE__) + " - " + String(__TIME__))
 
 // use this to get internal VCC value
@@ -23,6 +24,7 @@ String clientname;
 bool state = false;
 #define WAIT_TIME 1000
 unsigned long _next_change = 0;
+
 
 void setup() {
     // put your setup code here, to run once:
@@ -44,10 +46,13 @@ void setup() {
         // Do subscriptions to get the node's config data
         Serial.println(F("Connecting to MQTT"));
 		mqtt.connect("id/#");
-        if (mqtt.connected() ) {
-            // now we're connected publish version status.
-            mqtt.publish("id/sys/version", NPN_COMPILE);
-        }
+    }
+
+    if (mqtt.connected() ) {
+        // now we're connected publish version status.
+        mqtt.publish("sys/version", NPN_COMPILE);
+
+        init_peripherals(mqtt);
     }
 
 }
@@ -57,6 +62,6 @@ void loop() {
 
     mqtt.handle_client();
 
-
+    process_updates();
 
 }

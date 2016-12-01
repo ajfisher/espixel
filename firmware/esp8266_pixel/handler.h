@@ -4,5 +4,10 @@
  */
 
 #include <Arduino.h>
+#include "messaging.h"
+#include "pixel_peripheral.h"
 
+void init_peripherals(Messaging& m);
+void process_updates();
 void subscription_handler(char* topic, byte* payload, unsigned int length);
+

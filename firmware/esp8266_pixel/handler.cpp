@@ -3,6 +3,25 @@
 
 #include "handler.h"
 
+PixelPeripheral * pixels;
+
+void init_peripherals(Messaging& m) {
+    // initialises the various peripherals attached to the board.
+
+    // set up peripheral
+    pixels = new PixelPeripheral();
+    pixels->begin(m);
+
+}
+
+void process_updates() {
+
+    // periodically we need to do some work especially on the peripherals
+    pixels->update();
+
+}
+
+
 void subscription_handler(char* topic, byte* payload, unsigned int length) {
 
     String t = (String)topic;
@@ -19,5 +38,7 @@ void subscription_handler(char* topic, byte* payload, unsigned int length) {
     Serial.print(t);
     Serial.print(" Payload: ");
     Serial.println(p);
+
+    pixels->sub_handler(t, p);
 
 }
