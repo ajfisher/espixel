@@ -48,6 +48,11 @@ void Configurator::begin() {
 
 }
 
+ESPIXEL_MODES Configurator::mode() {
+    return _mode;
+}
+
+
 void Configurator::save_config_cb() {
   Serial.println("Should save config");
   _save_config = true;

@@ -20,6 +20,9 @@ Configurator config(mqtt);
 
 String clientname;
 
+bool state = false;
+#define WAIT_TIME 1000
+unsigned long _next_change = 0;
 
 void setup() {
     // put your setup code here, to run once:
@@ -53,5 +56,7 @@ void loop() {
   // put your main code here, to run repeatedly:
 
     mqtt.handle_client();
+
+
 
 }

@@ -19,6 +19,12 @@
 
 #define DEFAULT_PORTAL_TIMEOUT 120
 
+enum ESPIXEL_MODES {
+    AP,
+    STA
+};
+
+
 class Configurator {
 
     public:
@@ -27,6 +33,7 @@ class Configurator {
         ~Configurator() {};
 
         void begin();
+        ESPIXEL_MODES mode();
 
 
     private:
@@ -44,6 +51,7 @@ class Configurator {
         //flag for saving data
         static bool _save_config;
 
+        ESPIXEL_MODES _mode = AP;
 };
 
 
