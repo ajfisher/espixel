@@ -27,6 +27,13 @@ void Messaging::begin() {
     // connect is called explicitly.
 }
 
+void Messaging::begin(MQTT_CALLBACK_SIGNATURE) {
+
+    begin();
+
+    set_callback(callback);
+
+}
 bool Messaging::connect() {
 
     return _client.connect(id.c_str());
@@ -34,9 +41,11 @@ bool Messaging::connect() {
 
 bool Messaging::connect(String topic) {
 
-    // sets up a subscription to the topic.
-    connect();
-
+    // sets up the connection and then subscribes to the topic.
+    if( connect() ) {
+        Serial.println("Now subscribe");
+        subscribe(topic);
+    }
 }
 
 bool Messaging::connected() {
@@ -70,7 +79,25 @@ void Messaging::publish(String topic, String payload) {
 
 }
 
-void Messaging::subscribe(String topic) {
+bool Messaging::subscribe(String topic) {
 
+	String t = String(id) + String("/") + topic;
+
+    Serial.print("Subscribing to: ");
+    Serial.print(t);
+
+    bool substate = _client.subscribe(t.c_str());
+    if (substate) {
+        Serial.println(" - success");
+    } else {
+        Serial.println(" - failure");
+    }
+
+    return (substate);
+}
+
+void Messaging::set_callback(MQTT_CALLBACK_SIGNATURE) {
+
+    _client.setCallback(callback);
 
 }
