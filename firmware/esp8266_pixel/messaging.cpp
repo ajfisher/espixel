@@ -43,7 +43,9 @@ bool Messaging::connect(String topic) {
 
     // sets up the connection and then subscribes to the topic.
     if( connect() ) {
+#ifdef DEBUG
         Serial.println("Now subscribe");
+#endif
         subscribe(topic);
     }
 }
@@ -71,8 +73,8 @@ void Messaging::publish(String topic, String payload) {
         String t = String(id) + String("/") + topic;
         _client.publish(t.c_str(), payload.c_str());
 
-        Serial.println(t);
-        Serial.println(payload);
+        //Serial.println(t);
+        //Serial.println(payload);
     } else {
         Serial.println("Not connected");
     }
@@ -83,15 +85,18 @@ bool Messaging::subscribe(String topic) {
 
 	String t = String(id) + String("/") + topic;
 
+    bool substate = _client.subscribe(t.c_str());
+
+#ifdef DEBUG
     Serial.print("Subscribing to: ");
     Serial.print(t);
 
-    bool substate = _client.subscribe(t.c_str());
     if (substate) {
         Serial.println(" - success");
     } else {
         Serial.println(" - failure");
     }
+#endif
 
     return (substate);
 }

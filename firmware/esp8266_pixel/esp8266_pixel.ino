@@ -1,14 +1,13 @@
+/** Firmware to control WS2812 Pixels via MQTT on ESP8266 **/
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 
-//#include "espixel_lib.h"
 #include "messaging.h"
 #include "configurator.h"
 #include "handler.h"
 
-
-#define NPN_VERSION "0.3.0"
+#define NPN_VERSION "0.4.0"
 #define NPN_COMPILE (String(NPN_VERSION) + " - " + String(__DATE__) + " - " + String(__TIME__))
 
 // use this to get internal VCC value

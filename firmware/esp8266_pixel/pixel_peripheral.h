@@ -3,6 +3,14 @@
 
 #include "peripherals.h"
 
+#define DEFAULT_PIXEL_PIN  2
+#define DEFAULT_PIXEL_COUNT 64
+
+#define SUB_TOPIC (String("ic/") + _id + String("/#"))
+
+// corresponds to 30fps which is fast enough for static displays
+#define FRAME_MILLIS 30
+
 enum PX_STATES {
     PXP_NONE,
     PXP_START,
@@ -15,18 +23,29 @@ enum PX_STATES {
 class PixelPeripheral : public Peripheral {
     public:
         PixelPeripheral();
+        PixelPeripheral(uint8_t id);
         void begin(Messaging& m);
+        void begin(Messaging& m, uint8_t pin, uint16_t num_pixels);
+        String get_subscription_topic();
         void publish_data();
         void sub_handler(String topic, String payload);
         void update();
 
     private:
+        uint8_t _id = 0;
+        uint8_t _pin = DEFAULT_PIXEL_PIN;
+
         uint8_t * _px = 0;
         uint16_t _px_count = 0;
+
         uint8_t _colour_depth = 3;
+
         unsigned long _last_update = 0;
 
-        void initialise_pixels(uint16_t num_pixels);
+        String _subscription = ""; // subscription topic.
+
+        void initialise_pixels(uint8_t pin, uint16_t num_pixels);
+        void _subscribe();
         void set_pixel(uint16_t pixel, uint8_t r, uint8_t g, uint8_t b);
         void set_strip(uint8_t r, uint8_t g, uint8_t b);
 

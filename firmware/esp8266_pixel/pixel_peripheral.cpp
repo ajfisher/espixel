@@ -1,16 +1,60 @@
 
 #include "pixel_peripheral.h"
 
-#define PIXEL_PIN  2
-#define PIXEL_COUNT 64
-
-// corresponds to 10fps which is fast enough for static displays
-#define FRAME_MILLIS 30
-
 PixelPeripheral::PixelPeripheral() {
+
+    // set peripheral values
+    _updateable = true;
+    _publishable = false;
 
     Serial.println("Making a new pixel strip");
 }
+
+void PixelPeripheral::initialise_pixels(uint8_t pin, uint16_t num_pixels) {
+    // set up the pixel array, allocate mem etc.
+    //
+    if (_px) {
+        free (_px);
+        _px_count = 0;
+    }
+
+    if (num_pixels > 0) {
+        Serial.println(num_pixels);
+        if (_px = (uint8_t *)malloc(num_pixels * _colour_depth)) {
+            memset(_px, 0, num_pixels * _colour_depth);
+            _px_count = num_pixels;
+        } else {
+            _px_count = 0;
+        }
+    }
+
+    pinMode(_pin, OUTPUT);
+
+}
+
+void PixelPeripheral::begin(Messaging& m) {
+    // set up the logger
+    _mqtt_client = m;
+
+    initialise_pixels(DEFAULT_PIXEL_PIN, DEFAULT_PIXEL_COUNT);
+
+    _subscribe();
+}
+
+void PixelPeripheral::_subscribe() {
+    // does the actual subscription process
+
+    bool subbed = _mqtt_client.subscribe(SUB_TOPIC);
+
+    if (! subbed) {
+        Serial.println("Couldn't subscribe to content messages");
+        _mqtt_client.publish("sys/error", "sub_fail");
+    } else {
+        _mqtt_client.publish("oc/status", "available");
+    }
+}
+
+
 
 // ESP8266 show() is external to enforce ICACHE_RAM_ATTR execution
 extern "C" void ICACHE_RAM_ATTR show(
@@ -33,54 +77,22 @@ void PixelPeripheral::set_strip(uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
-void PixelPeripheral::initialise_pixels(uint16_t num_pixels) {
-    // set up the pixel array, allocate mem etc.
-    //
-    if (_px) {
-        free (_px);
-        _px_count = 0;
-    }
-
-    if (num_pixels > 0) {
-        Serial.println(num_pixels);
-        if (_px = (uint8_t *)malloc(num_pixels * _colour_depth)) {
-            memset(_px, 0, num_pixels * _colour_depth);
-            _px_count = num_pixels;
-        } else {
-            _px_count = 0;
-        }
-    }
-
-    pinMode(PIXEL_PIN, OUTPUT);
-
-}
-
-void PixelPeripheral::begin(Messaging& m) {
-    // set up the logger
-    _mqtt_client = m;
-
-    _updateable = true;
-    _publishable = false;
-
-    initialise_pixels(PIXEL_COUNT);
-
-    bool subbed = _mqtt_client.subscribe("ic/#");
-
-    if (! subbed) {
-        Serial.println("Couldn't subscribe to content messages");
-        _mqtt_client.publish("sys/error", "sub_fail");
-    } else {
-        _mqtt_client.publish("oc/status", "available");
-    }
-}
-
 void PixelPeripheral::publish_data() {
-
     // for a pixel display - this is a NOOP
 }
 
-void PixelPeripheral::sub_handler(String topic, String payload) {
+String PixelPeripheral::get_subscription_topic() {
+    // returns the topic that a subscription has been set up
+    // on for this strip which is useful for routing.
+    return _subscription;
+}
 
+void PixelPeripheral::sub_handler(String topic, String payload) {
+    // Handle any messages on topics we're subscribed to.
+    //
+    // remove the whole front of the string that is equivalent to
+    // our subscription topic.
+    //
     // bust up the string so we can grab the pertinent parts.
     char s[256];
     strcpy(s, topic.c_str());
@@ -199,7 +211,7 @@ void PixelPeripheral::update() {
     // update is called as fast as possible and it can sometimes
     // cause issues with flicker.
     if (millis() > (_last_update + FRAME_MILLIS) ) {
-        show(PIXEL_PIN, _px, _px_count * _colour_depth);
+        show(_pin, _px, _px_count * _colour_depth);
         _last_update = millis();
     }
 }
