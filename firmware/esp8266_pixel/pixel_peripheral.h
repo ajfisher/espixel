@@ -6,7 +6,7 @@
 #define DEFAULT_PIXEL_PIN  2
 #define DEFAULT_PIXEL_COUNT 64
 
-#define SUB_TOPIC (String("ic/") + _id + String("/#"))
+#define SUB_TOPIC (String(_id) + String("/i/#"))
 
 // corresponds to 30fps which is fast enough for static displays
 #define FRAME_MILLIS 30
@@ -24,6 +24,7 @@ class PixelPeripheral : public Peripheral {
     public:
         PixelPeripheral();
         PixelPeripheral(uint8_t id);
+        ~PixelPeripheral();
         void begin(Messaging& m);
         void begin(Messaging& m, uint8_t pin, uint16_t num_pixels);
         String get_subscription_topic();

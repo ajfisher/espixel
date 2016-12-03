@@ -1,4 +1,3 @@
-
 #include "pixel_peripheral.h"
 
 PixelPeripheral::PixelPeripheral() {
@@ -7,7 +6,19 @@ PixelPeripheral::PixelPeripheral() {
     _updateable = true;
     _publishable = false;
 
+    _subscription = SUB_TOPIC;
     Serial.println("Making a new pixel strip");
+}
+
+PixelPeripheral::~PixelPeripheral() {
+    // just need to free up any pixel memory that was allocated.
+
+    Serial.println("Freeing memory");
+    if (_px) {
+        free(_px);
+        _px_count = 0;
+    }
+    Serial.println("Memory freed");
 }
 
 void PixelPeripheral::initialise_pixels(uint8_t pin, uint16_t num_pixels) {
@@ -33,27 +44,33 @@ void PixelPeripheral::initialise_pixels(uint8_t pin, uint16_t num_pixels) {
 }
 
 void PixelPeripheral::begin(Messaging& m) {
-    // set up the logger
+    // begin with defaults for everything
+    begin(m, DEFAULT_PIXEL_PIN, DEFAULT_PIXEL_COUNT);
+}
+
+void PixelPeripheral::begin(Messaging& m, uint8_t pin, uint16_t num_pixels) {
+    // set up the link to the mqtt server and do any other work.
     _mqtt_client = m;
 
-    initialise_pixels(DEFAULT_PIXEL_PIN, DEFAULT_PIXEL_COUNT);
+    initialise_pixels(pin, num_pixels);
 
     _subscribe();
+
 }
 
 void PixelPeripheral::_subscribe() {
     // does the actual subscription process
 
-    bool subbed = _mqtt_client.subscribe(SUB_TOPIC);
+    Serial.println(_subscription);
+    bool subbed = _mqtt_client.subscribe(_subscription);
 
     if (! subbed) {
-        Serial.println("Couldn't subscribe to content messages");
-        _mqtt_client.publish("sys/error", "sub_fail");
+        Serial.println("Couldn't subscribe to peripheral messages");
+        _mqtt_client.publish((String(_id) + "/sys/error"), "sub_fail");
     } else {
-        _mqtt_client.publish("oc/status", "available");
+        _mqtt_client.publish((String(_id) + "/o/c/status"), "available");
     }
 }
-
 
 
 // ESP8266 show() is external to enforce ICACHE_RAM_ATTR execution

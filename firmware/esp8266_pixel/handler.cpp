@@ -10,7 +10,11 @@ void init_peripherals(Messaging& m) {
 
     // set up peripheral
     pixels = new PixelPeripheral();
-    pixels->begin(m);
+    pixels->begin(m, 2, 8);
+
+}
+
+void add_strip(Messaging& m, uint8_t pin, uint16_t num_pixels) {
 
 }
 
@@ -18,7 +22,6 @@ void process_updates() {
 
     // periodically we need to do some work especially on the peripherals
     pixels->update();
-
 }
 
 
