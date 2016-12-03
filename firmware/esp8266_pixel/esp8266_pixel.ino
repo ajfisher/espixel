@@ -7,7 +7,7 @@
 #include "configurator.h"
 #include "handler.h"
 
-#define NPN_VERSION "0.5.2"
+#define NPN_VERSION "0.5.3"
 #define NPN_COMPILE (String(NPN_VERSION) + " - " + String(__DATE__) + " - " + String(__TIME__))
 
 // use this to get internal VCC value

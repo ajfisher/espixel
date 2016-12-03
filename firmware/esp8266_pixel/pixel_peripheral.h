@@ -36,7 +36,8 @@ class PixelPeripheral : public Peripheral {
 
     private:
         uint8_t _id = 0;
-        uint8_t _pin = NULL;
+        uint8_t _pin = 0;
+        bool _configured = false;
 
         uint8_t * _px = 0;
         uint16_t _px_count = 0;

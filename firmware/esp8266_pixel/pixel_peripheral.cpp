@@ -31,6 +31,8 @@ void PixelPeripheral::initialise_pixels(uint8_t pin, uint16_t num_pixels) {
     _set_pin(pin);
 
     _set_length(num_pixels);
+
+    _configured = true;
 }
 
 void PixelPeripheral::begin(Messaging& m) {
@@ -94,9 +96,9 @@ void PixelPeripheral::_set_pin(uint8_t pin) {
 
     if (pin != _pin) {
         // only do this if there's an actual change
-        // turn the strip off then set it
-        if (_pin != NULL) {
-            // we have been previously set
+        // turn the strip off then set it to the new pin
+        if (_configured) {
+            // we are configured properly so we can target an old pin.
             set_strip(0, 0, 0);
             show(_pin, _px, _px_count * _colour_depth);
             pinMode(_pin, INPUT);
