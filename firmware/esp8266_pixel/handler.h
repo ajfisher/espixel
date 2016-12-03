@@ -11,8 +11,11 @@
 #include "pixel_peripheral.h"
 
 #define MAX_STRIPS 8
+#define DEFAULT_PX_PIN 2
+#define DEFAULT_PX_LENGTH 64
 
-
+void add_strip(String payload);
+void add_strip(uint8_t pin, uint16_t num_pixels);
 void handler_start();
 void init_peripherals(Messaging& m);
 void process_updates();

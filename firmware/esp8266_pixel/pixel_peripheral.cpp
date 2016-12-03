@@ -13,6 +13,16 @@ PixelPeripheral::PixelPeripheral() {
     _subscription = SUB_TOPIC;
 }
 
+PixelPeripheral::PixelPeripheral(uint8_t id) {
+
+    _updateable = true;
+    _publishable = false;
+
+    _id = id;
+
+    _subscription = SUB_TOPIC;
+}
+
 PixelPeripheral::~PixelPeripheral() {
     // just need to free up any pixel memory that was allocated.
 
@@ -48,6 +58,14 @@ void PixelPeripheral::begin(Messaging& m, uint8_t pin, uint16_t num_pixels) {
 
     _subscribe();
 
+}
+
+uint8_t PixelPeripheral::get_pin() {
+    return _pin;
+}
+
+uint16_t PixelPeripheral::get_length() {
+    return _px_count;
 }
 
 void PixelPeripheral::_subscribe() {
@@ -90,10 +108,6 @@ void PixelPeripheral::_set_length(uint16_t num_pixels) {
 void PixelPeripheral::_set_pin(uint8_t pin) {
     // change the pin from whatever it was to the newly supplied one
 
-    // set old pin pinmode to input
-    // set int variable to new pin
-    // set new pin pinmode to output.
-
     if (pin != _pin) {
         // only do this if there's an actual change
         // turn the strip off then set it to the new pin
@@ -101,12 +115,11 @@ void PixelPeripheral::_set_pin(uint8_t pin) {
             // we are configured properly so we can target an old pin.
             set_strip(0, 0, 0);
             show(_pin, _px, _px_count * _colour_depth);
-            pinMode(_pin, INPUT);
+            //pinMode(_pin, INPUT);
         }
         _pin = pin;
-        pinMode(_pin, OUTPUT);
     }
-
+    pinMode(_pin, OUTPUT);
 }
 
 
@@ -239,7 +252,6 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                     b = (uint8_t)strtol(v.c_str(), NULL, 16);
 
                     set_strip(r, g, b);
-
                 }
                 break;
             }

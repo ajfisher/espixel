@@ -29,6 +29,8 @@ class PixelPeripheral : public Peripheral {
         ~PixelPeripheral();
         void begin(Messaging& m);
         void begin(Messaging& m, uint8_t pin, uint16_t num_pixels);
+        uint8_t get_pin();
+        uint16_t get_length();
         String get_subscription_topic();
         void publish_data();
         void sub_handler(String topic, String payload);
