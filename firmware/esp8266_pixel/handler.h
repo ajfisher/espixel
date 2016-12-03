@@ -10,6 +10,8 @@
 #include "messaging.h"
 #include "pixel_peripheral.h"
 
+#define MAX_STRIPS 8
+
 
 void handler_start();
 void init_peripherals(Messaging& m);

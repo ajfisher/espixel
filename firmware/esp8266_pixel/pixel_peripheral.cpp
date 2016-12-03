@@ -76,7 +76,6 @@ void PixelPeripheral::_set_length(uint16_t num_pixels) {
     }
 
     if (num_pixels > 0) {
-        Serial.println(num_pixels);
         if (_px = (uint8_t *)malloc(num_pixels * _colour_depth)) {
             memset(_px, 0, num_pixels * _colour_depth);
             _px_count = num_pixels;
@@ -95,7 +94,13 @@ void PixelPeripheral::_set_pin(uint8_t pin) {
 
     if (pin != _pin) {
         // only do this if there's an actual change
-        pinMode(_pin, INPUT);
+        // turn the strip off then set it
+        if (_pin != NULL) {
+            // we have been previously set
+            set_strip(0, 0, 0);
+            show(_pin, _px, _px_count * _colour_depth);
+            pinMode(_pin, INPUT);
+        }
         _pin = pin;
         pinMode(_pin, OUTPUT);
     }

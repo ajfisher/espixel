@@ -6,6 +6,7 @@
 PixelPeripheral * pixels;
 String pixel_sub;
 
+uint8_t strip_count = 0;
 String _client_name;
 
 void handler_start() {
