@@ -18,21 +18,20 @@ Messaging mqtt(wifi_client);
 
 Configurator config(mqtt);
 
-String clientname;
-
 bool state = false;
 #define WAIT_TIME 1000
 unsigned long _next_change = 0;
-
 
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
     Serial.println();
 
-    clientname = String("ESP_") + String(ESP.getChipId(), 16);
+    //client_name = String("ESP_") + String(ESP.getChipId(), 16);
     //clean FS, for testing
     //SPIFFS.format();
+
+    handler_start();
 
     config.begin();
     mqtt.begin(subscription_handler);

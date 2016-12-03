@@ -1,5 +1,9 @@
 #include "pixel_peripheral.h"
 
+// ESP8266 show() is external to enforce ICACHE_RAM_ATTR execution
+extern "C" void ICACHE_RAM_ATTR show(
+  uint8_t pin, uint8_t *pixels, uint32_t numBytes);
+
 PixelPeripheral::PixelPeripheral() {
 
     // set peripheral values
@@ -7,7 +11,6 @@ PixelPeripheral::PixelPeripheral() {
     _publishable = false;
 
     _subscription = SUB_TOPIC;
-    Serial.println("Making a new pixel strip");
 }
 
 PixelPeripheral::~PixelPeripheral() {
@@ -24,23 +27,10 @@ PixelPeripheral::~PixelPeripheral() {
 void PixelPeripheral::initialise_pixels(uint8_t pin, uint16_t num_pixels) {
     // set up the pixel array, allocate mem etc.
     //
-    if (_px) {
-        free (_px);
-        _px_count = 0;
-    }
 
-    if (num_pixels > 0) {
-        Serial.println(num_pixels);
-        if (_px = (uint8_t *)malloc(num_pixels * _colour_depth)) {
-            memset(_px, 0, num_pixels * _colour_depth);
-            _px_count = num_pixels;
-        } else {
-            _px_count = 0;
-        }
-    }
+    _set_pin(pin);
 
-    pinMode(_pin, OUTPUT);
-
+    _set_length(num_pixels);
 }
 
 void PixelPeripheral::begin(Messaging& m) {
@@ -61,7 +51,6 @@ void PixelPeripheral::begin(Messaging& m, uint8_t pin, uint16_t num_pixels) {
 void PixelPeripheral::_subscribe() {
     // does the actual subscription process
 
-    Serial.println(_subscription);
     bool subbed = _mqtt_client.subscribe(_subscription);
 
     if (! subbed) {
@@ -72,10 +61,47 @@ void PixelPeripheral::_subscribe() {
     }
 }
 
+void PixelPeripheral::_set_length(uint16_t num_pixels) {
 
-// ESP8266 show() is external to enforce ICACHE_RAM_ATTR execution
-extern "C" void ICACHE_RAM_ATTR show(
-  uint8_t pin, uint8_t *pixels, uint32_t numBytes);
+    if (_px) {
+
+        // if we already have pixels then set the old ones to zero,
+        // call update one last time to blank them and then free them out.
+        memset(_px, 0, _px_count * _colour_depth);
+        show(_pin, _px, _px_count * _colour_depth);
+
+        // now free them all up
+        free (_px);
+        _px_count = 0;
+    }
+
+    if (num_pixels > 0) {
+        Serial.println(num_pixels);
+        if (_px = (uint8_t *)malloc(num_pixels * _colour_depth)) {
+            memset(_px, 0, num_pixels * _colour_depth);
+            _px_count = num_pixels;
+        } else {
+            _px_count = 0;
+        }
+    }
+}
+
+void PixelPeripheral::_set_pin(uint8_t pin) {
+    // change the pin from whatever it was to the newly supplied one
+
+    // set old pin pinmode to input
+    // set int variable to new pin
+    // set new pin pinmode to output.
+
+    if (pin != _pin) {
+        // only do this if there's an actual change
+        pinMode(_pin, INPUT);
+        _pin = pin;
+        pinMode(_pin, OUTPUT);
+    }
+
+}
+
 
 void PixelPeripheral::set_pixel(uint16_t pixel, uint8_t r, uint8_t g, uint8_t b) {
     // set the pixel value in memory
@@ -107,9 +133,6 @@ String PixelPeripheral::get_subscription_topic() {
 void PixelPeripheral::sub_handler(String topic, String payload) {
     // Handle any messages on topics we're subscribed to.
     //
-    // remove the whole front of the string that is equivalent to
-    // our subscription topic.
-    //
     // bust up the string so we can grab the pertinent parts.
     char s[256];
     strcpy(s, topic.c_str());
@@ -118,30 +141,43 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
     uint16_t pixel_number;
     uint8_t r, g, b;
 
-    PX_STATES state = PXP_START;
-    const char* cmp = "px";
+    PX_STATES state = PXP_NONE;
 
-    // we can drop the first as it's only going to be the ID.
+    if ( strlen(token) > 1) {
+        return; // all input topics should start with c or d
+    }
+
+    if (token[0] == 'c') {
+        state = PXP_CONTENT;
+    } else if (token[0] == 'd') {
+        state = PXP_DEFINITION;
+    } else {
+        return; // bail as we don't care
+    }
+
+    // we can drop the first as we've already looked at it.
     while (token) {
+
+        // pop the next token off the stack
         token = strtok(NULL, "/");
         String t = String(token);
 
         switch (state) {
 
-            case PXP_START:
+            case PXP_CONTENT: {
                 // see if our token is px or strip
                 if (t == "px") {
                     state = PXP_PIXEL;
                 } else if (t == "strip") {
-                    Serial.println("Process strip");
                     state = PXP_STRIP;
                 } else if (t == "data") {
                     state = PXP_DATA;
                 }
                 continue;
                 break;
+            }
 
-            case PXP_PIXEL:
+            case PXP_PIXEL: {
                 // the next token should be a number
                 // explicitly test for 0
                 if (t == "0") {
@@ -177,11 +213,11 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                 }
 
                 break;  // PXP_PIXEL
+            }
 
-            case PXP_STRIP:
+            case PXP_STRIP: {
                 r = g = b = 0;
 
-                Serial.println("Processing strip now");
                 // convert to values which are then put into the pixel array.
                 if (payload.length() != 6) {
                     Serial.print("PXP: Error pixel value incorrect: ");
@@ -199,9 +235,9 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
 
                 }
                 break;
+            }
 
-            case PXP_DATA:
-
+            case PXP_DATA: {
                 // we have here a buffer of pixel data.
                 // reset to zeros
                 uint16_t px_bytes = _px_count * _colour_depth;
@@ -215,7 +251,46 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                 }
                 memcpy(_px, payload.c_str(), cpy_len);
                 break;
+            }
+
+            case PXP_DEFINITION: {
+
+                if (t == "strip") {
+                    // yep we're a strip, stay in this state
+                    ;
+                } else if (t == "length") {
+
+                    uint16_t l = payload.toInt();
+                    if (l > 0) {
+                        _set_length(l);
+                    } else {
+                        // look specifically for a zero
+                        if (payload == "0") {
+                            _set_length(0);
+                        }
+                        // otherwise an error and we don't care
+                    }
+
+                } else if (t == "pin") {
+
+                    uint8_t p = payload.toInt();
+                    if (p > 0) {
+                        _set_pin(p);
+                    } else {
+                        // look specifically for val "0"
+                        if (payload == "0") {
+                            _set_pin(0);
+                        }
+                        // otherwise it was an error and evaled to 0 so ignore
+                    }
+
+                }
+
+                break;
+            }
+
         }
+
     }
 
 }

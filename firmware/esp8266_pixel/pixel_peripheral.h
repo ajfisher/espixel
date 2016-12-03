@@ -15,6 +15,8 @@ enum PX_STATES {
     PXP_NONE,
     PXP_START,
     PXP_END,
+    PXP_DEFINITION,
+    PXP_CONTENT,
     PXP_PIXEL,
     PXP_STRIP,
     PXP_DATA
@@ -34,7 +36,7 @@ class PixelPeripheral : public Peripheral {
 
     private:
         uint8_t _id = 0;
-        uint8_t _pin = DEFAULT_PIXEL_PIN;
+        uint8_t _pin = NULL;
 
         uint8_t * _px = 0;
         uint16_t _px_count = 0;
@@ -47,6 +49,8 @@ class PixelPeripheral : public Peripheral {
 
         void initialise_pixels(uint8_t pin, uint16_t num_pixels);
         void _subscribe();
+        void _set_length(uint16_t num_pixels);
+        void _set_pin(uint8_t pin);
         void set_pixel(uint16_t pixel, uint8_t r, uint8_t g, uint8_t b);
         void set_strip(uint8_t r, uint8_t g, uint8_t b);
 
