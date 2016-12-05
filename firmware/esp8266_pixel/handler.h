@@ -12,7 +12,7 @@
 
 #define MAX_STRIPS 8
 #define DEFAULT_PX_PIN 2
-#define DEFAULT_PX_LENGTH 64
+#define DEFAULT_PX_LENGTH 8
 
 void add_strip(String payload);
 void add_strip(uint8_t pin, uint16_t num_pixels);

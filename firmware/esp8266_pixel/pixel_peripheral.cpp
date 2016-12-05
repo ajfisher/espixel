@@ -58,6 +58,8 @@ void PixelPeripheral::begin(Messaging& m, uint8_t pin, uint16_t num_pixels) {
 
     _subscribe();
 
+    // set up the animator obects
+    _shift_animator = new ShiftAnimator();
 }
 
 uint8_t PixelPeripheral::get_pin() {
@@ -192,6 +194,8 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                     state = PXP_STRIP;
                 } else if (t == "data") {
                     state = PXP_DATA;
+                } else if (t == "anim") {
+                    state = PXP_ANIMATION;
                 }
                 continue;
                 break;
@@ -272,6 +276,31 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                 break;
             }
 
+            case PXP_ANIMATION: {
+
+                if (t == "shift") {
+                    // we're a strip animation so set it up.
+                    if (_shift_animator->define(payload)) {
+                        _anim_mode = PX_ANIM_SHIFT;
+                        _shift_animator->start();
+                    } else {
+                        _mqtt_client.publish(F("sys/error"),
+                                F("animation definition incorrect"));
+                    }
+
+                } else if (t == "fade") {
+                    // we're a fade.
+                    _anim_mode = PX_ANIM_FADE;
+                } else if (t == "stop") {
+                    // stop all animators
+                    Serial.println("Stop animation");
+                    _shift_animator->stop();
+                    _anim_mode = PX_ANIM_NONE;
+
+                }
+                break;
+            }
+
             case PXP_DEFINITION: {
 
                 if (t == "strip") {
@@ -302,16 +331,12 @@ void PixelPeripheral::sub_handler(String topic, String payload) {
                         }
                         // otherwise it was an error and evaled to 0 so ignore
                     }
-
                 }
 
                 break;
             }
-
         }
-
     }
-
 }
 
 void PixelPeripheral::update() {
@@ -322,6 +347,11 @@ void PixelPeripheral::update() {
     // update is called as fast as possible and it can sometimes
     // cause issues with flicker.
     if (millis() > (_last_update + FRAME_MILLIS) ) {
+
+        if (_shift_animator->animating()) {
+            _shift_animator->update(_px, _px_count, _colour_depth);
+        }
+
         show(_pin, _px, _px_count * _colour_depth);
         _last_update = millis();
     }

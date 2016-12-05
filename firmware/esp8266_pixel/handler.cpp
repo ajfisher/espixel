@@ -150,12 +150,7 @@ void subscription_handler(char* topic, byte* payload, unsigned int length) {
     // process the items in the strip first as it's most likely one of these
     if (strip_count > 0) {
         for (uint8_t i=0; i < strip_count; i++) {
-            /**Serial.print("T: ");
-            Serial.print(t);
-            Serial.print(" Subscription: ");
-            Serial.print(i);
-            Serial.print(" ");
-            Serial.println(strip_subscriptions[i]);**/
+
             if (t.startsWith(strip_subscriptions[i]) ) {
                 // rip off all the preamble that we no longer need now we know
                 // where to route this.
