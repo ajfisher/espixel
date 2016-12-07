@@ -31,6 +31,7 @@ class Messaging {
         String server;
         uint16_t port;
         String id;
+        bool configured = false;
 
     private:
 

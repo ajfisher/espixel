@@ -7,6 +7,7 @@
 #define ESPIXEL_HANDLER_h
 
 #include <Arduino.h>
+
 #include "messaging.h"
 #include "pixel_peripheral.h"
 

@@ -22,7 +22,11 @@ void Messaging::begin() {
     Serial.print(" Port: ");
     Serial.println(port);
 
-    _client.setServer(server.c_str(), port);
+    if (server && port) {
+
+        _client.setServer(server.c_str(), port);
+        configured = true;
+    }
 
     // connect is called explicitly.
 }
@@ -36,7 +40,12 @@ void Messaging::begin(MQTT_CALLBACK_SIGNATURE) {
 }
 bool Messaging::connect() {
 
-    return _client.connect(id.c_str());
+    if (configured) {
+
+        return _client.connect(id.c_str());
+    }
+
+    return false;
 }
 
 bool Messaging::connect(String topic) {

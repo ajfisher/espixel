@@ -5,6 +5,7 @@ WiFiManagerParameter * custom_mqtt_server;
 WiFiManagerParameter * custom_mqtt_port;
 
 bool Configurator::_save_config = false;
+bool mqtt_config = false;
 
 Configurator::Configurator() {
 
@@ -101,7 +102,7 @@ void Configurator::load_config() {
                 DynamicJsonBuffer json_buffer;
                 JsonObject& json = json_buffer.parseObject(buf.get());
 
-                //json.printTo(Serial);
+                json.printTo(Serial);
 
                 if (json.success()) {
                     strcpy(_mqtt_server, json["mqtt_server"]);
@@ -115,6 +116,10 @@ void Configurator::load_config() {
         Serial.println("Failed to mount FS");
     }
     //end read
+    if (strlen(_mqtt_server) >= 8) {
+        mqtt_config = true;
+    }
+
 }
 
 void Configurator::wifi_config() {
@@ -134,8 +139,11 @@ void Configurator::wifi_config() {
     wifiManager.addParameter(custom_mqtt_server);
     wifiManager.addParameter(custom_mqtt_port);
 
-    //reset settings - for testing
-    //wifiManager.resetSettings();
+    //reset settings
+    if (! mqtt_config) {
+        // reset everything so it forces capture portal
+        wifiManager.resetSettings();
+    }
 
     //sets timeout until configuration portal gets turned off
     //useful to make it all retry or go to sleep
@@ -144,7 +152,7 @@ void Configurator::wifi_config() {
 
     //fetches ssid and pass and tries to connect
     //if it does not connect it starts an access point with the specified name
-    //here  "AutoConnectAP"
+    //here
     //and goes into a blocking loop awaiting configuration
     if (!wifiManager.autoConnect(_clientname.c_str())) {
         Serial.println(F("Failed to connect and hit timeout point"));
