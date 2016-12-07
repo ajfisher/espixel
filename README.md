@@ -92,6 +92,8 @@ the site infrastructure for BuzzConf.
 Note that on the breakout board for the ESP12E pin 4 and 5 are labelled back
 to front.
 
+![Layout](examples/espixel_bb.png)
+
 Connect the pins as follows:
 
 ESP Module:
@@ -138,22 +140,24 @@ Change `ESP_f2df79` for your module name, and the `127.0.0.1` for
 If the module has come up appropriately then you'll see a message like this:
 
 ```
-ESP_f2df79/sys/version 0.7.0 - Dec  5 2016 - 23:23:17
-ESP_f2df79/o/c/status available
-ESP_f2df79/0/o/c/status available
+ESP_f2df79/sys/version 0.7.0 - Dec  5 2016 - 23:23:17 (1)
+ESP_f2df79/o/c/status available (2)
+ESP_f2df79/0/o/c/status available (3)
 ```
 
 If you get this, you're in business. You can now publish messages and your
 module should behave.
 
-* 1: tells you the version of the firmware being run.
-* 2: tells you that the module itself has subscribed to inbound messages so
+* (1): tells you the version of the firmware being run.
+* (2): tells you that the module itself has subscribed to inbound messages so
 it can take configuration and data
-* 3: tells you that the strip with ID 0 is available to take pixel messages.
+* (3): tells you that the strip with ID 0 is available to take pixel messages.
 
 By default all modules are configured to have a neopixel strip on GPIO2 which is
-identified by strip `0`. You can have up to 8 independent strips and they can
-each be of different lengths.
+identified as strip `0`. You can have up to 8 independent strips and they can
+each be of different lengths which you can define. As you add each on they are
+assigned to the next available ID from 1-7. Watch the available message return
+to indicate they are ready to go.
 
 #### Resetting the module
 
