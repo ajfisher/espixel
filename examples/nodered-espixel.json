@@ -1,0 +1,198 @@
+[
+    {
+        "id": "93d492c2.94c32",
+        "type": "tab",
+        "label": "ESPIXEL"
+    },
+    {
+        "id": "76f4ff19.95131",
+        "type": "mqtt out",
+        "z": "93d492c2.94c32",
+        "name": "MQTT Server",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "broker": "eafae6e1.e55d78",
+        "x": 824.5,
+        "y": 282,
+        "wires": []
+    },
+    {
+        "id": "19b6b5a4.ef52da",
+        "type": "inject",
+        "z": "93d492c2.94c32",
+        "name": "Test animator",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 112.5,
+        "y": 80,
+        "wires": [
+            [
+                "ed3fb3cc.b6578"
+            ]
+        ]
+    },
+    {
+        "id": "5bdf0878.955958",
+        "type": "trigger",
+        "z": "93d492c2.94c32",
+        "op1": "",
+        "op2": "",
+        "op1type": "nul",
+        "op2type": "pay",
+        "duration": "150",
+        "extend": false,
+        "units": "ms",
+        "reset": "",
+        "name": "",
+        "x": 549.5,
+        "y": 282,
+        "wires": [
+            [
+                "76f4ff19.95131"
+            ]
+        ]
+    },
+    {
+        "id": "ed3fb3cc.b6578",
+        "type": "function",
+        "z": "93d492c2.94c32",
+        "name": "Create animator",
+        "func": "var nodeID = \"ESP_d0bc47\"\n\nvar setupMsg = {\n    topic: nodeID + \"/0/i/c/px/2\",\n    payload: \"888811\",\n};\n\nvar animateMsg = {\n    topic: nodeID + \"/0/i/c/anim/shift\",\n    payload: \"1:50:2000:1:1\",\n}\n\nvar blankMsg = {\n    topic: nodeID + \"/0/i/c/strip\",\n    payload: \"000000\",\n}\nreturn [setupMsg, animateMsg, blankMsg];",
+        "outputs": "3",
+        "noerr": 0,
+        "x": 143.5,
+        "y": 281,
+        "wires": [
+            [
+                "ac8c1712.b67448"
+            ],
+            [
+                "2acb2623.8f178a"
+            ],
+            [
+                "ca1b2539.b01278"
+            ]
+        ]
+    },
+    {
+        "id": "ac8c1712.b67448",
+        "type": "delay",
+        "z": "93d492c2.94c32",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "3",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 358.5,
+        "y": 191,
+        "wires": [
+            [
+                "76f4ff19.95131"
+            ]
+        ]
+    },
+    {
+        "id": "ca1b2539.b01278",
+        "type": "trigger",
+        "z": "93d492c2.94c32",
+        "op1": "",
+        "op2": "",
+        "op1type": "nul",
+        "op2type": "pay",
+        "duration": "2100",
+        "extend": true,
+        "units": "ms",
+        "reset": "",
+        "name": "",
+        "x": 356.5,
+        "y": 385,
+        "wires": [
+            [
+                "76f4ff19.95131"
+            ]
+        ]
+    },
+    {
+        "id": "2acb2623.8f178a",
+        "type": "delay",
+        "z": "93d492c2.94c32",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "3",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "x": 344.5,
+        "y": 281,
+        "wires": [
+            [
+                "5bdf0878.955958"
+            ]
+        ]
+    },
+    {
+        "id": "28eea234.b30fee",
+        "type": "twitter in",
+        "z": "93d492c2.94c32",
+        "twitter": "",
+        "tags": "arduino",
+        "user": "false",
+        "name": "Robot test",
+        "topic": "tweets",
+        "inputs": 0,
+        "x": 104.5,
+        "y": 494,
+        "wires": [
+            [
+                "7395a9ba.087928",
+                "ed3fb3cc.b6578"
+            ]
+        ]
+    },
+    {
+        "id": "7395a9ba.087928",
+        "type": "debug",
+        "z": "93d492c2.94c32",
+        "name": "",
+        "active": false,
+        "console": "false",
+        "complete": "true",
+        "x": 371.5,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "eafae6e1.e55d78",
+        "type": "mqtt-broker",
+        "z": "",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": true,
+        "keepalive": "60",
+        "cleansession": true,
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": ""
+    }
+]
