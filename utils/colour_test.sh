@@ -2,7 +2,7 @@
 
 declare -a colours=("880000" "008800" "000088" "888800" "008888" "880088" "888888" "000000")
 
-mqtt=mosquitto_pub
+mqtt_app=./node_modules/.bin/mqtt_pub
 
 if [ -z "$1" ]
 then
@@ -25,12 +25,21 @@ else
     nodetarget="$3"
 fi
 
+if [ -z "$4" ]
+then
+    host="127.0.0.1"
+else
+    host="$4"
+fi
 
+mqtt="$mqtt_app -h $host"
+
+echo $mqtt
 # while true construct
 while :
 do
-    $mqtt -t "${nodetarget}/${stripid}/i/c/strip" -m "000000"
     echo "Strip animate 10 seconds"
+    $mqtt -t "${nodetarget}/${stripid}/i/c/strip" -m "000000"
     $mqtt -t "${nodetarget}/${stripid}/i/c/px/1" -m "888800"
     $mqtt -t "${nodetarget}/${stripid}/i/c/anim/shift" -m "1:100:10000:1:1"
     sleep 9
